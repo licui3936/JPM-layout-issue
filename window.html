@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Window</title>
+    <link rel="stylesheet" href="styles/frame-styles.css"></link>
+    <link rel="stylesheet" href="styles/light-theme.css"></link>
+    <script src="js/layoutCreate.js"></script>
+</head>
+<body>
+    <div id="of-frame-main">
+        <title-bar id="title-bar"></title-bar>
+        <div id="body-container">
+            <div id="layout-container"></div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript">
+        let channel;
+        const divMap = new Map();
+
+        let nextTab = 0;
+        const layoutContainer = document.getElementById('layout-container');
+        const nextTabBtn = document.getElementById('next-tab-button');
+        const titleDiv = document.getElementById('title');
+        const switchTabs = () => {
+            const totalTabs = layoutContainer.childNodes.length;
+            nextTab = (nextTab + 1) % totalTabs;
+
+            if (totalTabs <= 1) return;
+
+            layoutContainer.childNodes?.forEach((n, i) => {
+                n.style.display = i === nextTab ? 'block' : 'none';
+                if (i === nextTab) {
+                    titleDiv.innerText = n.id;
+                }
+            });
+
+            console.log(`switched to tab index ${nextTab} with title ${titleDiv.innerText}`);
+        };
+
+        nextTabBtn.onclick = switchTabs;
+
+        // i = 1 means default to hidden tab
+        const createLayout = async ({ layoutName, layout, multiInstanceViewBehavior = 'default' }, i = 1) => {
+            const container = document.createElement('div');
+            container.id = layoutName;
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.padding = '2px';
+            container.style.display = i === 0 ? 'block' : 'none';
+
+            layoutContainer.appendChild(container);
+            divMap.set(layoutName, container);
+            console.log(`[platform-window] calling Layout.create() for layout ${layoutName}`);
+            await fin.Platform.Layout.create({ layoutName, layout, container, multiInstanceViewBehavior });
+            channel.dispatch('create', layoutName);
+        };
+
+        const destroy = async (layoutIdentity) => {
+            console.log(`[platform-window] calling Layout.destroy() for layout ${layoutIdentity.layoutName}`);
+            await fin.Platform.Layout.destroy(layoutIdentity);
+            channel.dispatch('destroy', layoutIdentity.layoutName);
+            const container = divMap.get(layoutIdentity.layoutName);
+            layoutContainer.removeChild(container);
+            divMap.delete(layoutIdentity.layoutName);
+            switchTabs();
+        };
+
+        const layoutManagerOverride = (Base) =>
+            class E2ELayoutManager extends Base {
+                async applyLayoutSnapshot({ layouts }) {
+                    await Promise.all(
+                        Object.entries(layouts).map(async ([layoutName, layout], i) =>
+                            createLayout({ layoutName, layout }, i)
+                        )
+                    );
+
+                    titleDiv.innerText = 'Layouts loaded';
+                }
+                async removeLayout(layoutIdentity) {
+                    console.log(`[platform-window] manager: removeLayout called for ${layoutIdentity.layoutName}`);
+                    return destroy(layoutIdentity);
+                }
+            };
+        window.addEventListener("DOMContentLoaded", async () => {
+            /*
+            await fin.me.on('layout-initialized', () => {
+                createLayout();
+            });
+            */
+
+            fin.Platform.Layout.init({layoutManagerOverride}).catch(e =>{
+                console.log(e);
+               
+            });
+
+    });
+</script>
+</html>
