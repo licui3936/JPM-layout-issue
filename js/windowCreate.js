@@ -1,6 +1,6 @@
-async function createWindow() {
+export async function createWindow() {
     const winOptions = {
-        frame: false,
+        frame: true,
         preloadScripts: [
             {
                 url: "http://localhost:5555/js/preload1.js",
@@ -22,7 +22,14 @@ async function createWindow() {
         layout: {
             content: [],
         },
-        url: "http://localhost:5555/platform-window.html",
+        layoutSnapshot: {
+            layouts: {
+                __default__: {
+                    content: [],
+                },
+            },
+        },
+        url: "http://localhost:5555/window.html",
         customContext: {
             instanceId: "d8f7f0e4-bd24-42a7-8e49-88255f1b0506",
             containerId: "d8f7f0e4-bd24-42a7-8e49-88255f1b0506",
@@ -70,13 +77,16 @@ async function createWindow() {
         "015afa24-9815-442d-ba43-5dd1f0e2ee34",
         "709ae59e-f252-4be1-ac47-74c6f555c091",
     ];
-    for (i = 0; i < 6; i++) {
-        await platform.createView(
-            {
-                url: `http://localhost:5555/view${i + 1}.html`,
-                name: `${viewNames[i]}`,
-            },
-            target // pool views
-        );
+    for (let i = 0; i < 6; i++) {
+        console.log(`${Date.now()} - Creating view ${i + 1}`);
+        await platform
+            .createView(
+                {
+                    url: `http://localhost:5555/view${i + 1}.html`,
+                    name: `${viewNames[i]}`,
+                },
+                target // pool views
+            )
+            .catch((e) => console.error(e));
     }
 }
