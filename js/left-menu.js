@@ -132,7 +132,7 @@ class LeftMenu extends HTMLElement {
                     <button
                         @click=${() => this.createWindow().catch(console.error)}
                     >
-                        New OF Window
+                        JPM OF Window
                     </button>
                 </li>
             </ul>
