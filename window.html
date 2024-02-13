@@ -22,7 +22,7 @@
 
         let nextTab = 0;
         const layoutContainer = document.getElementById('layout-container');
-        const nextTabBtn = document.getElementById('next-tab-button');
+        // const nextTabBtn = document.getElementById('next-tab-button');
         const titleDiv = document.getElementById('title');
         const switchTabs = () => {
             const totalTabs = layoutContainer.childNodes.length;
@@ -40,7 +40,7 @@
             console.log(`switched to tab index ${nextTab} with title ${titleDiv.innerText}`);
         };
 
-        nextTabBtn.onclick = switchTabs;
+        // nextTabBtn.onclick = switchTabs;
 
         // i = 1 means default to hidden tab
         const createLayout = async ({ layoutName, layout, multiInstanceViewBehavior = 'default' }, i = 1) => {
