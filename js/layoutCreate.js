@@ -1,4 +1,4 @@
-async function createLayout() {
+async function createJPMLayout() {
     // add layout
     const layout = {
         content: [
